@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Number | SMS Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #001f3f;
+            --accent-color: #007bff;
+            --accent-hover: #0056b3;
+            --bg-body: #f4f7f6;
+            --bg-card: #ffffff;
+            --text-dark: #1a1a1a;
+            --text-muted: #6c757d;
+            --border-color: #e0e0e0;
+            --radius-md: 12px;
+            --shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .verify-card {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Icon styling */
+        .icon-box {
+            width: 70px;
+            height: 70px;
+            background: #eef6ff;
+            color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 30px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.6rem;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* OTP Input Container */
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            color: var(--primary-color);
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #f0f8ff;
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+        }
+
+        /* Buttons */
+        .btn-verify {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn-verify:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .resend-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .resend-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 400px) {
+            .otp-input {
+                width: 40px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="verify-card">
+        <div class="icon-box">📲</div>
+        
+        <h2>Verification Code</h2>
+        <p>We've sent a 6-digit code to your phone. Please enter it below to activate your account.</p>
+
+        <form action="VerifyServlet" method="POST" id="otpForm">
+            <div class="otp-container">
+                <input type="text" class="otp-input" maxlength="1" pattern="\d*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="\d*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="\d*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="\d*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="\d*" inputmode="numeric" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="\d*" inputmode="numeric" required>
+            </div>
+
+            <input type="hidden" name="full_otp" id="fullOtp">
+
+            <button type="submit" class="btn-verify">Verify & Activate</button>
+        </form>
+
+        <div class="resend-text">
+            Didn't receive the code? <br>
+            <span class="resend-link" onclick="location.reload()">Resend SMS</span>
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.otp-input');
+        const hiddenInput = document.getElementById('fullOtp');
+
+        inputs.forEach((input, index) => {
+            // Move to next input on typing
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+                updateHiddenInput();
+            });
+
+            // Handle backspace to go back
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        function updateHiddenInput() {
+            let code = "";
+            inputs.forEach(input => code += input.value);
+            hiddenInput.value = code;
+        }
+
+        // Simple UX: Auto-focus the first box on load
+        window.onload = () => inputs[0].focus();
+    </script>
+
+</body>
+</html>
